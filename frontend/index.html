@@ -21,7 +21,8 @@
 
                 <form action="#" method="get">
                     <label for="city">Enter city name:</label>
-                    <input
+                    <div class="search-input-group">
+                        <input
                         type="text"
                         id="city"
                         name="city"
@@ -29,6 +30,7 @@
                         required
                     >
                     <button type="submit">Search</button>
+                    </div>
                 </form>
             </section>
             <section aria-labelledby="current-heading">
@@ -48,12 +50,31 @@
                 <h2 id="hourly-heading">Hourly Forecast</h2>
 
                 <table>
-                    <caption>Describe weather forecast by hour</caption>
-                    <th>
-                        <td>Time</td>
-                        <td>Temperature</td>
-                        <td>Condition</td>
-                    </th>
+                    <caption>Hourly weather forecast</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Time</th>
+                            <th scope="col">Temperature</th>
+                            <th scope="col">Condition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                        </tr>
+                        <tr>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                        </tr>
+                        <tr>
+                            <td>--</td>
+                            <td>--</td>
+                            <td>--</td>
+                        </tr>
+                    </tbody>
                 </table>
             </section>
 
