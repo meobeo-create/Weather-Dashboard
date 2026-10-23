@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Weather Dashboard</title>
+
+        <link rel="stylesheet" href="css/style.css">
+        <script src="js/main.js" defer></script>
+    </head>
+    
+    <body>
+        <header>
+            <h1>Weather Dashboard</h1>
+            <p>Check current weather and forecasts by city.</p>
+        </header>
+
+        <main>
+            <section aria-labelledby="search-heading">
+                <h2 id="search-heading">Search City</h2>
+
+                <form action="#" method="get">
+                    <label for="city">Enter city name:</label>
+                    <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        placeholder="e.g. Hanoi"
+                        required
+                    >
+                    <button type="submit">Search</button>
+                </form>
+            </section>
+            <section aria-labelledby="current-heading">
+                <h2 id="current-heading">Current Weather</h2>
+
+                <article>
+                    <h3>City Name</h3>
+                    <p>Temperature: -- °C</p>
+                    <p>Weather condition: --</p>
+                    <p>Feels like: -- °C</p>
+                    <p>Humidity: -- %</p>
+                    <p>Wind speed: --</p>
+                </article>
+            </section>
+
+            <section aria-labelledby="hourly-heading">
+                <h2 id="hourly-heading">Hourly Forecast</h2>
+
+                <table>
+                    <caption>Describe weather forecast by hour</caption>
+                    <th>
+                        <td>Time</td>
+                        <td>Temperature</td>
+                        <td>Condition</td>
+                    </th>
+                </table>
+            </section>
+
+            <section aria-labelledby="daily-heading">
+                <h2 id="daily-heading">Daily Forecast</h2>
+                
+                <article>
+                    <h3>Forecast Item</h3>
+                    <p>Date: --</p>
+                    <p>Temperature: -- °C</p>
+                    <p>Weather condition: --</p>
+                </article>
+            </section>
+
+            <section aria-labelledby="chart-heading">
+                <h2 id="chart-heading">Temperature Chart</h2>
+                <p>The temperature chart will be displayed here.</p>
+            </section>
+
+        </main>
+
+        <footer>
+            <p>Weather Dashboard - Learning Project</p>
+        </footer>
+    </body>
+</html>
