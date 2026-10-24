@@ -32,17 +32,18 @@
                     <button type="submit">Search</button>
                     </div>
                 </form>
+                <p id="error-message" style ="color: red; font-size: 0.85rem; margin-top:0.5rem;"></p>
             </section>
             <section aria-labelledby="current-heading">
                 <h2 id="current-heading">Current Weather</h2>
 
                 <article>
-                    <h3>City Name</h3>
-                    <p>Temperature: -- °C</p>
-                    <p>Weather condition: --</p>
-                    <p>Feels like: -- °C</p>
-                    <p>Humidity: -- %</p>
-                    <p>Wind speed: --</p>
+                    <h3 id="current-city">City Name</h3>
+                    <p id="current-temp">Temperature: -- °C</p>
+                    <p id="current-condition">Weather condition: --</p>
+                    <p id="current-feels">Feels like: -- °C</p>
+                    <p id="current-humidity">Humidity: -- %</p>
+                    <p id ="current-wind">Wind speed: --</p>
                 </article>
             </section>
 
@@ -82,14 +83,14 @@
                 <h2 id="daily-heading">Daily Forecast</h2>
                 
                 <article>
-                    <h3>Forecast Item</h3>
-                    <p>Date: --</p>
-                    <p>Temperature: -- °C</p>
-                    <p>Weather condition: --</p>
+                    <h3 id="daily-item-title">Forecast Item</h3>
+                    <p id="daily-date">Date: --</p>
+                    <p id="daily-temp">Temperature: -- °C</p>
+                    <p id="daily-condition">Weather condition: --</p>
                 </article>
             </section>
 
-            <section aria-labelledby="chart-heading">
+            <section class="chart-section" aria-labelledby="chart-heading">
                 <h2 id="chart-heading">Temperature Chart</h2>
                 <p>The temperature chart will be displayed here.</p>
             </section>
