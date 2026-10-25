@@ -1,104 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Weather Dashboard</title>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <main class="dashboard" id="dashboard">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">WEATHER DASHBOARD</p>
+        <h1 id="city-title">Sydney, Australia</h1>
+      </div>
+      <div class="top-actions">
+        <div class="unit-switch" role="group" aria-label="Temperature unit">
+          <button type="button" class="unit-button active" data-unit="C" aria-pressed="true">°C</button>
+          <button type="button" class="unit-button" data-unit="F" aria-pressed="false">°F</button>
+        </div>
+        <button type="button" class="icon-button" id="clear-button" aria-label="Reset dashboard" title="Reset dashboard">×</button>
+      </div>
+    </header>
 
-        <link rel="stylesheet" href="css/style.css">
-        <script src="js/main.js" defer></script>
-    </head>
-    
-    <body>
-        <header>
-            <h1>Weather Dashboard</h1>
-            <p>Check current weather and forecasts by city.</p>
-        </header>
+    <section class="search-panel" aria-label="Search weather by city">
+      <form id="search-form">
+        <label for="city-input">Search a sample city</label>
+        <div class="search-row">
+          <input id="city-input" name="city" type="text" placeholder="E.g. Ha noi" autocomplete="off" required>
+          <button type="submit" class="search-button">Search</button>
+        </div>
+        <p class="search-error" id="search-error" role="status" aria-live="polite"></p>
+      </form>
+    </section>
 
-        <main>
-            <section aria-labelledby="search-heading">
-                <h2 id="search-heading">Search City</h2>
+    <section class="overview-grid" aria-label="Current conditions and hourly forecast">
+      <article class="glass-card current-card">
+        <div class="card-heading">
+          <div>
+            <p class="eyebrow">RIGHT NOW</p>
+            <h2>Current weather</h2>
+          </div>
+          <span class="round-icon" aria-hidden="true">↻</span>
+        </div>
+        <div class="current-main">
+          <div class="weather-icon" id="current-icon" role="img" aria-label="Partly cloudy">🌤️</div>
+          <div>
+            <p class="current-temp" id="current-temperature">12°</p>
+            <p class="current-condition" id="current-condition">Partly cloudy</p>
+          </div>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric">
+            <span class="metric-label">Rain</span>
+            <strong id="current-rain">0 mm</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Humidity</span>
+            <strong id="current-humidity">85%</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Wind</span>
+            <strong id="current-wind">8.1 km/h</strong>
+            <small id="current-wind-direction">↙ W</small>
+          </div>
+        </div>
+      </article>
 
-                <form action="#" method="get">
-                    <label for="city">Enter city name:</label>
-                    <div class="search-input-group">
-                        <input
-                        type="text"
-                        id="city"
-                        name="city"
-                        placeholder="e.g. Hanoi"
-                        required
-                    >
-                    <button type="submit">Search</button>
-                    </div>
-                </form>
-                <p id="error-message" style ="color: red; font-size: 0.85rem; margin-top:0.5rem;"></p>
-            </section>
-            <section aria-labelledby="current-heading">
-                <h2 id="current-heading">Current Weather</h2>
+      <article class="glass-card hourly-card">
+        <div class="card-heading">
+          <div>
+            <p class="eyebrow">UP NEXT</p>
+            <h2>Hourly forecast</h2>
+          </div>
+          <span class="card-note">Next 5 hours</span>
+        </div>
+        <div class="hourly-list" id="hourly-list"></div>
+      </article>
+    </section>
 
-                <article>
-                    <h3 id="current-city">City Name</h3>
-                    <p id="current-temp">Temperature: -- °C</p>
-                    <p id="current-condition">Weather condition: --</p>
-                    <p id="current-feels">Feels like: -- °C</p>
-                    <p id="current-humidity">Humidity: -- %</p>
-                    <p id ="current-wind">Wind speed: --</p>
-                </article>
-            </section>
+    <section class="glass-card weekly-card" aria-labelledby="weekly-heading">
+      <div class="card-heading">
+        <div>
+          <p class="eyebrow">PLAN AHEAD</p>
+          <h2 id="weekly-heading">7-day forecast</h2>
+          <p class="subheading">Daily high and low</p>
+        </div>
+        <span class="round-icon" aria-hidden="true">↻</span>
+      </div>
+      <div class="weekly-list" id="weekly-list"></div>
+    </section>
 
-            <section aria-labelledby="hourly-heading">
-                <h2 id="hourly-heading">Hourly Forecast</h2>
-
-                <table>
-                    <caption>Hourly weather forecast</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">Time</th>
-                            <th scope="col">Temperature</th>
-                            <th scope="col">Condition</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>--</td>
-                            <td>--</td>
-                            <td>--</td>
-                        </tr>
-                        <tr>
-                            <td>--</td>
-                            <td>--</td>
-                            <td>--</td>
-                        </tr>
-                        <tr>
-                            <td>--</td>
-                            <td>--</td>
-                            <td>--</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <section aria-labelledby="daily-heading">
-                <h2 id="daily-heading">Daily Forecast</h2>
-                
-                <article>
-                    <h3 id="daily-item-title">Forecast Item</h3>
-                    <p id="daily-date">Date: --</p>
-                    <p id="daily-temp">Temperature: -- °C</p>
-                    <p id="daily-condition">Weather condition: --</p>
-                </article>
-            </section>
-
-            <section class="chart-section" aria-labelledby="chart-heading">
-                <h2 id="chart-heading">Temperature Chart</h2>
-                <p>The temperature chart will be displayed here.</p>
-            </section>
-
-        </main>
-
-        <footer>
-            <p>Weather Dashboard - Learning Project</p>
-        </footer>
-    </body>
+    <footer class="footer">
+      <span>Weather Dashboard · Learning Project</span>
+      <span>Illustrative sample data · No live forecast</span>
+    </footer>
+  </main>
+</body>
 </html>
