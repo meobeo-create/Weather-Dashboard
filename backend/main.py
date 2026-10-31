@@ -1,89 +1,95 @@
-import time
-from typing import Optional
-from fastapi import FastAPI, Query, HTTPException, Depends, Request, Response, Cookie
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from sqlmodel import Session, select
+from typing import List
+from contextlib import asynccontextmanager
+
+from database import init_db, get_session
+from models import WeatherSearchHistory
+
+# --- SEED DATA (Dữ liệu mẫu ban đầu) ---
+def seed_initial_data():
+    from database import engine
+    with Session(engine) as session:
+        # Kiểm tra xem bảng đã có dữ liệu chưa để tránh seed trùng lặp
+        statement = select(WeatherSearchHistory)
+        existing_records = session.exec(statement).first()
+        
+        if not existing_records:
+            initial_histories = [
+                WeatherSearchHistory(city_name="Hanoi", temperature=23.5, condition="Overcast"),
+                WeatherSearchHistory(city_name="Sydney", temperature=18.0, condition="Rainy"),
+                WeatherSearchHistory(city_name="Tokyo", temperature=15.2, condition="Clear sky")
+            ]
+            session.add_all(initial_histories)
+            session.commit()
+            print(">>> [SEED DATA] Đã khởi tạo dữ liệu mẫu thành công vào PostgreSQL!")
+
+# --- LIFESPAN QUẢN LÝ KHỞI ĐỘNG ỨNG DỤNG ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Khởi tạo bảng và seed data khi server bật lên
+    init_db()
+    seed_initial_data()
+    yield
+    # Code dọn dẹp khi tắt server (nếu có)
 
 app = FastAPI(
-    title="Weather Dashboard Backend - Week 8",
-    description="Full-stack Weather Dashboard API with Middleware, Dependencies & Sessions",
-    version="3.0.0"
+    title="Weather Dashboard Backend - Week 9",
+    description="Full-stack Weather Dashboard API with PostgreSQL & SQLModel",
+    version="4.0.0",
+    lifespan=lifespan
 )
 
-# Cấu hình CORS Middleware cho phép Frontend gọi API từ mọi nguồn (hoặc cấu hình cụ thể domain)
+# Cấu hình CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Trong thực tế sản phẩm nên thay bằng domain cụ thể của frontend
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Custom Middleware: Tự động đo và thêm header thời gian xử lý request vào Response
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    # Thêm custom header vào response trả về client
-    response.headers["X-Process-Time"] = f"{process_time:.4f} sec"
-    return response
-
-
-
-class UserSettings(BaseModel):
-    city_name: str = Field(..., example="Hanoi")
-    units: str = Field("metric", example="metric")
-
-
-
-# Hàm Dependency dùng chung để chuẩn hóa và kiểm tra tham số phân trang / truy vấn
-def common_query_parameters(
-    q: Optional[str] = Query(None, description="Từ khóa tìm kiếm phụ trợ"),
-    limit: int = Query(10, ge=1, le=50, description="Giới hạn số lượng bản ghi trả về")
-):
-    return {"q": q, "limit": limit}
-
-
-# Phục vụ giao diện Frontend chính
+# Phục vụ Frontend
 @app.get("/")
 def serve_frontend():
     return FileResponse("../frontend/index.html")
 
-# Endpoint ứng dụng Dependency dùng chung
-@app.get("/api/search-history")
-def get_search_history(commons: dict = Depends(common_query_parameters)):
-    return {
-        "status": "success",
-        "query_info": commons,
-        "message": "Lấy lịch sử tìm kiếm thành công qua Dependency!"
-    }
 
-# Endpoint quản lý Cookies (Lưu trạng thái thành phố gần nhất - Khắc phục HTTP Stateless)
-@app.post("/api/preferences/set")
-def set_user_preference(settings: UserSettings, response: Response):
-    # Lưu tên thành phố vào Cookie của trình duyệt (có hiệu lực trong 7 ngày = 604800 giây)
-    response.set_cookie(key="preferred_city", value=settings.city_name, max_age=604800)
-    response.set_cookie(key="preferred_units", value=settings.units, max_age=604800)
-    return {
-        "status": "success",
-        "message": f"Đã lưu cấu hình (Thành phố: {settings.city_name}, Đơn vị: {settings.units}) vào Cookie thành công!"
-    }
+# ==========================================
+# CÁC ENDPOINT CRUD CHO LỊCH SỬ THỜI TIẾT
+# ==========================================
 
-@app.get("/api/preferences/get")
-def get_user_preference(
-    preferred_city: Optional[str] = Cookie(None),
-    preferred_units: Optional[str] = Cookie(None)
-):
-    return {
-        "status": "success",
-        "cookie_data": {
-            "preferred_city": preferred_city or "Chưa thiết lập",
-            "preferred_units": preferred_units or "metric"
-        }
-    }
+# 1. CREATE: Thêm một lịch sử tìm kiếm mới vào Database
+@app.post("/api/history", response_model=WeatherSearchHistory, status_code=status.HTTP_201_CREATED)
+def create_search_history(history: WeatherSearchHistory, session: Session = Depends(get_session)):
+    session.add(history)
+    session.commit()
+    session.refresh(history)
+    return history
 
-# Mount thư mục Static Files để phục vụ CSS, JS cho Frontend
+
+# 2. READ: Lấy danh sách toàn bộ lịch sử tìm kiếm từ PostgreSQL
+@app.get("/api/history", response_model=List[WeatherSearchHistory])
+def get_search_histories(session: Session = Depends(get_session)):
+    statement = select(WeatherSearchHistory)
+    histories = session.exec(statement).all()
+    return histories
+
+
+# 3. DELETE: Xóa một bản ghi lịch sử theo ID
+@app.delete("/api/history/{history_id}", status_code=status.HTTP_200_OK)
+def delete_search_history(history_id: int, session: Session = Depends(get_session)):
+    history = session.get(WeatherSearchHistory, history_id)
+    if not history:
+        raise HTTPException(status_code=404, detail="Không tìm thấy bản ghi lịch sử này")
+    
+    session.delete(history)
+    session.commit()
+    return {"status": "success", "message": f"Đã xóa lịch sử ID {history_id} thành công"}
+
+
+# Mount thư mục Static Files cho Frontend
 app.mount("/static", StaticFiles(directory="../frontend"), name="static")
