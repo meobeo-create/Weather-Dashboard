@@ -7,7 +7,7 @@ from typing import List
 from contextlib import asynccontextmanager
 
 from database import init_db, get_session
-from models import WeatherSearchHistory
+from models import WeatherSearchHistory, WeatherSearchCreate
 
 # --- SEED DATA (Dữ liệu mẫu ban đầu) ---
 def seed_initial_data():
@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
     # Code dọn dẹp khi tắt server (nếu có)
 
 app = FastAPI(
-    title="Weather Dashboard Backend - Week 9",
+    title="Weather Dashboard Backend ",
     description="Full-stack Weather Dashboard API with PostgreSQL & SQLModel",
     version="4.0.0",
     lifespan=lifespan
@@ -62,34 +62,28 @@ def serve_frontend():
 # CÁC ENDPOINT CRUD CHO LỊCH SỬ THỜI TIẾT
 # ==========================================
 
-# 1. CREATE: Thêm một lịch sử tìm kiếm mới vào Database
-@app.post("/api/history", response_model=WeatherSearchHistory, status_code=status.HTTP_201_CREATED)
-def create_search_history(history: WeatherSearchHistory, session: Session = Depends(get_session)):
-    session.add(history)
-    session.commit()
-    session.refresh(history)
-    return history
-
-
-# 2. READ: Lấy danh sách toàn bộ lịch sử tìm kiếm từ PostgreSQL
 @app.get("/api/history", response_model=List[WeatherSearchHistory])
-def get_search_histories(session: Session = Depends(get_session)):
-    statement = select(WeatherSearchHistory)
-    histories = session.exec(statement).all()
+def get_histories(session: Session = Depends(get_session)):
+    histories = session.exec(select(WeatherSearchHistory)).all()
     return histories
 
-
-# 3. DELETE: Xóa một bản ghi lịch sử theo ID
-@app.delete("/api/history/{history_id}", status_code=status.HTTP_200_OK)
-def delete_search_history(history_id: int, session: Session = Depends(get_session)):
-    history = session.get(WeatherSearchHistory, history_id)
-    if not history:
-        raise HTTPException(status_code=404, detail="Không tìm thấy bản ghi lịch sử này")
-    
-    session.delete(history)
+@app.post("/api/history", response_model=WeatherSearchHistory, status_code=status.HTTP_201_CREATED)
+def create_history(data: WeatherSearchCreate, session: Session = Depends(get_session)):
+    db_item = WeatherSearchHistory.model_validate(data)
+    session.add(db_item)
     session.commit()
-    return {"status": "success", "message": f"Đã xóa lịch sử ID {history_id} thành công"}
+    session.refresh(db_item)
+    return db_item
 
+@app.delete("/api/history/{history_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_history(history_id: int, session: Session = Depends(get_session)):
+    item = session.get(WeatherSearchHistory, history_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Record not found")
+    session.delete(item)
+    session.commit()
+    return None
 
 # Mount thư mục Static Files cho Frontend
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+app.mount("/js", StaticFiles(directory="../frontend/js"), name="js")
+app.mount("/css", StaticFiles(directory="../frontend/css"), name="css")

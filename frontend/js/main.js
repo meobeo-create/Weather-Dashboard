@@ -286,3 +286,40 @@ function resetDashboardToDefault() {
     // Reset Weekly List
     weeklyList.innerHTML = `<p style="text-align: center; width: 100%; color: #94a3b8; padding: 20px;">No forecast data available.</p>`;
 }
+
+const API_BASE_URL = "http://127.0.0.1:8000/api";
+
+async function fetchSearchHistory() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/history`);
+        if (!response.ok) throw new Error("Lỗi khi tải lịch sử");
+        const data = await response.json();
+
+        // Gọi hàm hiển thị giao diện hoặc vẽ biểu đồ
+        renderHistoryTable(data);
+        renderWeatherChart(data); // Nếu có dùng Chart.js
+    } catch (error) {
+        console.error("Fetch error:", error);
+    }
+}
+
+async function saveSearchRecord(cityName, temp, weatherCondition) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/history`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                city_name: cityName,
+                temperature: temp,
+                condition: weatherCondition
+            })
+        });
+        if (response.ok) {
+            fetchSearchHistory(); // Tải lại danh sách mới nhất
+        }
+    } catch (error) {
+        console.error("Save error:", error);
+    }
+}
