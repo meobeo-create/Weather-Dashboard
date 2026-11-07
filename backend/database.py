@@ -1,4 +1,6 @@
 from sqlmodel import create_engine, Session, SQLModel
+import redis
+import os
 
 DATABASE_URL = "postgresql+psycopg2://postgres:123456@localhost:5432/weather_db"
 
@@ -13,3 +15,5 @@ def init_db():
 def get_session():
     with Session(engine) as session:
         yield session
+        
+redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)

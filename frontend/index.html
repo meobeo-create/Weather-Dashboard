@@ -5,10 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Weather Dashboard</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:,">
   <script src="js/main.js" defer></script>
 </head>
 <body>
-  <main class="dashboard" id="dashboard">
+
+<!-- ================= MÀN HÌNH XÁC THỰC (ĐĂNG NHẬP / ĐĂNG KÝ / QUÊN MẬT KHẨU) ================= -->
+  <div id="auth-container" class="glass-card" style="max-width: 450px; margin: 80px auto; padding: 30px;">
+      
+      <!-- 1. VIEW ĐĂNG NHẬP (Mặc định hiển thị) -->
+      <div id="view-login">
+          <h2 style="text-align: center; margin-bottom: 20px; color: white;">Weather Dashboard</h2>
+          <h4 style="text-align: center; margin-bottom: 15px; color: #ccc; font-weight: normal;">Sign In to your account</h4>
+          
+          <!-- Dòng hiển thị thông báo Đăng nhập / Đăng xuất -->
+          <div id="auth-message" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 500;"></div>
+          
+          <input type="text" id="login-username" placeholder="Username" style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box;">
+          <input type="password" id="login-password" placeholder="Password" style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box;">
+          
+          <button onclick="handleLogin()" style="width: 100%; padding: 10px; margin-top: 10px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Sign In</button>
+          
+          <!-- Dòng chứa 2 phần: Quên mật khẩu và Tạo account mới -->
+          <div style="display: flex; justify-content: space-between; margin-top: 18px; font-size: 13px;">
+              <a href="#" onclick="switchView('forgot')" style="color: #4da6ff; text-decoration: none;">Forgot password?</a>
+              <a href="#" onclick="switchView('register')" style="color: #4da6ff; text-decoration: none;">Create an account</a>
+          </div>
+      </div>
+
+      <!-- 2. VIEW ĐĂNG KÝ (Mặc định ẩn) -->
+      <div id="view-register" style="display: none;">
+          <h2 style="text-align: center; margin-bottom: 20px; color: white;">Create Account</h2>
+          
+          <div id="reg-message" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 500;"></div>
+
+          <input type="text" id="reg-username" placeholder="Username" style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box;">
+          <input type="email" id="reg-email" placeholder="Email address" style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box;">
+          <input type="password" id="reg-password" placeholder="Password" style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box;">
+          
+          <label style="display:block; font-size: 12px; margin: 10px 0; color: white; cursor: pointer;">
+              <input type="checkbox" id="reg-terms"> I agree to the Terms and Conditions
+          </label>
+          
+          <button onclick="handleRegister()" style="width: 100%; padding: 10px; margin-top: 5px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Sign Up</button>
+          
+          <div style="text-align: center; margin-top: 18px; font-size: 13px;">
+              <span style="color: #ccc;">Already have an account?</span> <a href="#" onclick="switchView('login')" style="color: #4da6ff; text-decoration: none;">Sign In</a>
+          </div>
+      </div>
+
+      <!-- 3. VIEW QUÊN MẬT KHẨU & ĐẶT LẠI MẬT KHẨU -->
+      <div id="view-forgot" style="display: none;">
+          <h2 style="text-align: center; margin-bottom: 15px; color: white;">Reset Password</h2>
+          
+          <div id="forgot-message" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 4px; text-align: center; font-size: 14px; font-weight: 500;"></div>
+
+          <!-- BƯỚC 1: Nhập Email để nhận OTP -->
+          <div id="forgot-step-1">
+              <p style="font-size: 13px; color: #ccc; text-align: center; margin-bottom: 15px;">Enter your registered email to receive the OTP code.</p>
+              <input type="email" id="forgot-email" placeholder="Enter your email..." style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box;">
+              <button onclick="handleSendOtp()" style="width: 100%; padding: 10px; margin-top: 10px; background: #ff9900; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Send OTP</button>
+          </div>
+
+          <!-- BƯỚC 2: Nhập OTP và Mật khẩu mới (Mặc định ẩn, sẽ hiện lên sau khi gửi OTP thành công) -->
+          <div id="forgot-step-2" style="display: none;">
+              <p style="font-size: 13px; color: #ccc; text-align: center; margin-bottom: 15px;">Enter the OTP sent to your email and set your new password.</p>
+              <input type="email" id="reset-email-display" readonly style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); cursor: not-allowed;">
+              <input type="text" id="reset-otp" placeholder="Enter 6-digit OTP" style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box;">
+              <input type="password" id="reset-new-password" placeholder="New password" style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box;">
+              <input type="password" id="reset-confirm-password" placeholder="Confirm new password" style="width: 100%; display:block; margin:10px 0; padding:10px; box-sizing: border-box;">
+              <button onclick="handleResetPassword()" style="width: 100%; padding: 10px; margin-top: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Update Password</button>
+          </div>
+          
+          <div style="text-align: center; margin-top: 18px; font-size: 13px;">
+              <a href="#" onclick="switchView('login')" style="color: #4da6ff; text-decoration: none;">← Back to Sign In</a>
+          </div>
+      </div>
+
+  </div>
+
+
+  <!-- ================= GIAO DIỆN CHÍNH WEATHER DASHBOARD (BỊ ẨN KHI CHƯA ĐĂNG NHẬP) ================= -->
+  <main class="dashboard" id="main-dashboard" style="display: none;">
+    
+    <!-- Thanh Header chứa thông tin tài khoản & nút Đăng xuất đổi tài khoản -->
+    <div class="glass-card" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; margin-bottom: 20px;">
+        <span style="color: white;">Hi, <strong id="current-username">User</strong> (<span id="current-role">role</span>)</span>
+        <button onclick="handleLogout()" style="padding: 6px 12px; background: #ff4d4d; color: white; border: none; border-radius: 4px; cursor: pointer;">Sign Out / Change Account</button>
+    </div>
+
+    <!-- Khu vực Quản lý Địa điểm Yêu thích riêng của User -->
+    <div id="favorites-container" class="glass-card" style="margin-bottom: 20px; padding: 15px;">
+        <h4 style="color: white;">⭐ Favorite Locations</h4>
+        <button onclick="addCurrentCityToFavorites()" style="margin: 5px 0; padding: 5px 10px; cursor: pointer;">+ Save Current City to Favorites</button>
+        <ul id="favorites-list" style="list-style-type: none; padding: 0; margin-top: 10px;">
+            <!-- Render danh sách yêu thích bằng JavaScript -->
+        </ul>
+    </div>
+
     <header class="topbar">
       <div>
         <p class="eyebrow">WEATHER DASHBOARD</p>
